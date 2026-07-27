@@ -17,14 +17,14 @@
 - base 的新 helper **只收 `bytes`**，不收 `str`（不做 union 簽名）。
 - 每個 task 一個 commit，訊息格式 `fix: ...` / `test: ...`，結尾加 `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`。
 - git 身分已設 repo-local（johnhuang316），不需要再設定。
-- 所有 pytest 指令用 `.venv/bin/pytest`（Task 1 會建立）。
+- 所有 pytest 指令用 `venv/bin/pytest`（Task 1 會建立）。
 
 ---
 
 ### Task 1: 測試環境 + base `_slice_bytes` / `_line_at_byte`
 
 **Files:**
-- Create: `.venv/`（不 commit；`.gitignore` 已含）
+- Create: `venv/`（不 commit；`.gitignore` 已含）
 - Create: `tests/strategies/test_base_slice_bytes.py`
 - Modify: `src/code_index_mcp/indexing/strategies/base_strategy.py`（在 `_get_file_name` 之後、`_safe_extract_text` 之前插入新方法；**此 task 不刪舊方法**，zig 還在用，Task 6 才刪）
 
@@ -37,8 +37,8 @@
 
 ```bash
 cd /Users/cqi_clawbot/Project/code-index-mcp
-/opt/homebrew/opt/python@3.12/bin/python3.12 -m venv .venv
-.venv/bin/pip install -e . pytest
+/opt/homebrew/opt/python@3.12/bin/python3.12 -m venv venv
+venv/bin/pip install -e . pytest
 ```
 
 預期：安裝成功結尾顯示 `Successfully installed ... code-index-mcp-2.17.0 ... pytest-...`。
@@ -47,7 +47,7 @@ cd /Users/cqi_clawbot/Project/code-index-mcp
 - [ ] **Step 2: 跑既有測試確認基線是綠的**
 
 ```bash
-.venv/bin/pytest tests/ -q
+venv/bin/pytest tests/ -q
 ```
 
 預期:全部 PASS(如有既有失敗,記下失敗清單,後續 task 不得新增失敗項)。
@@ -116,7 +116,7 @@ def test_line_at_byte_counts_newlines_in_bytes() -> None:
 - [ ] **Step 4: 確認測試失敗**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_base_slice_bytes.py -v
+venv/bin/pytest tests/strategies/test_base_slice_bytes.py -v
 ```
 
 預期:FAIL,錯誤為 `AttributeError: '_DummyStrategy' object has no attribute '_slice_bytes'`。
@@ -148,7 +148,7 @@ def test_line_at_byte_counts_newlines_in_bytes() -> None:
 - [ ] **Step 6: 確認測試通過**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_base_slice_bytes.py -v
+venv/bin/pytest tests/strategies/test_base_slice_bytes.py -v
 ```
 
 預期:4 項全 PASS。
@@ -255,7 +255,7 @@ def test_unicode_imports_and_exports_not_corrupted() -> None:
 - [ ] **Step 2: 確認測試失敗**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_typescript_non_ascii.py -v
+venv/bin/pytest tests/strategies/test_typescript_non_ascii.py -v
 ```
 
 預期:FAIL——`test_unicode_symbols_match_ascii_twin` 的名稱集合不相等(unicode 版出現 `(): s` 之類的亂碼名),`test_unicode_function_extracted_exactly` 找不到 `greet`。
@@ -360,7 +360,7 @@ grep -n "context\.content\b" src/code_index_mcp/indexing/strategies/typescript_s
 - [ ] **Step 7: 確認測試通過(新測 + 全套)**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_typescript_non_ascii.py -v && .venv/bin/pytest tests/ -q
+venv/bin/pytest tests/strategies/test_typescript_non_ascii.py -v && venv/bin/pytest tests/ -q
 ```
 
 預期:新測 3 項 PASS;全套與 Task 1 Step 2 的基線一致。
@@ -450,7 +450,7 @@ def test_unicode_function_extracted_exactly() -> None:
 - [ ] **Step 2: 確認測試失敗**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_javascript_non_ascii.py -v
+venv/bin/pytest tests/strategies/test_javascript_non_ascii.py -v
 ```
 
 預期:FAIL,unicode 版符號名亂碼。
@@ -472,7 +472,7 @@ def test_unicode_function_extracted_exactly() -> None:
 
 - [ ] **Step 4: 全檔參數改名改型**
 
-對 `javascript_strategy.py` 做機械式替換——所有函式簽名中的 `content: str` 改 `content_bytes: bytes`,函式體內對該參數的引用 `content` 改 `content_bytes`(**除了** `parse_file` 裡的原始 `content: str` 參數與 `splitlines()` 那行)。受影響的函式:`_traverse_js_node`、`_get_function_name`、`_get_class_name`、`_get_method_name`、`_find_parent_class`、`_get_js_function_signature`、`_get_node_text`、`_infer_expression_type`、`_resolve_called_function`、`_resolve_argument_reference`、`_resolve_member_qualifier`(以 grep 實際簽名為準,凡收 `content` 的私有方法一律改)。
+對 `javascript_strategy.py` 做機械式替換——所有函式簽名中的 `content: str` 改 `content_bytes: bytes`,函式體內對該參數的引用 `content` 改 `content_bytes`(**除了** `parse_file` 裡的原始 `content: str` 參數與 `splitlines()` 那行)。受影響的函式:`_traverse_js_node`、`_collect_callback_arguments`(L355,收 `content: str` 並轉傳)、`_get_function_name`、`_get_class_name`、`_get_method_name`、`_find_parent_class`、`_get_js_function_signature`、`_get_node_text`、`_infer_expression_type`、`_resolve_called_function`、`_resolve_argument_reference`、`_resolve_member_qualifier`(以 grep 實際簽名為準,凡收 `content` 的私有方法一律改)。
 
 三個真正切片的位置改為:
 
@@ -501,7 +501,7 @@ grep -n "content\[" src/code_index_mcp/indexing/strategies/javascript_strategy.p
 - [ ] **Step 6: 確認測試通過**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_javascript_non_ascii.py tests/ -q
+venv/bin/pytest tests/strategies/test_javascript_non_ascii.py tests/ -q
 ```
 
 預期:全 PASS(基線不變)。
@@ -592,7 +592,7 @@ def test_unicode_method_extracted_exactly() -> None:
 - [ ] **Step 2: 確認測試失敗**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_java_non_ascii.py -v
+venv/bin/pytest tests/strategies/test_java_non_ascii.py -v
 ```
 
 預期:FAIL,unicode 版 package/import/符號名亂碼。
@@ -668,7 +668,7 @@ helper 全部改收 `content_bytes: bytes` 並用 `self._slice_bytes`:
 
 ```bash
 grep -n "context\.content\b" src/code_index_mcp/indexing/strategies/java_strategy.py
-.venv/bin/pytest tests/strategies/test_java_non_ascii.py tests/ -q
+venv/bin/pytest tests/strategies/test_java_non_ascii.py tests/ -q
 ```
 
 預期:grep 0 筆;測試全 PASS。
@@ -704,7 +704,12 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 #!/usr/bin/env python3
 """Issue #88 regression: non-ASCII content must not corrupt Kotlin symbols."""
 
-from code_index_mcp.indexing.strategies.kotlin_strategy import KotlinParsingStrategy
+import tree_sitter
+
+from code_index_mcp.indexing.strategies.kotlin_strategy import (
+    KotlinParsingStrategy,
+    TraversalContext,
+)
 
 ASCII_KT = """// Cafes -- acucar
 package com.example.app
@@ -754,17 +759,82 @@ def test_unicode_symbols_present() -> None:
     uni_names, _ = _parse(UNICODE_KT)
     assert "topLevel" in uni_names
     assert "Greeter.greet" in uni_names
+
+
+# --- 以下兩個測試直攻 L218 / L227 的 fallback 分支(修改前必紅) ---
+
+class _FakeNameNodeMissing:
+    """Duck-typed node: name field 缺失,強制走 header fallback(L218)。
+
+    _get_kotlin_function_name 只讀 child_by_field_name / start_point /
+    start_byte / end_byte 四個屬性,假節點足以覆蓋。
+    start_point 給極大列號讓 context.lines 快路徑失效。
+    """
+
+    def __init__(self, start_byte: int, end_byte: int):
+        self.start_byte = start_byte
+        self.end_byte = end_byte
+        self.start_point = (10 ** 6, 0)
+
+    def child_by_field_name(self, _name):
+        return None
+
+
+def _make_context(source: str) -> TraversalContext:
+    return TraversalContext(
+        content=source,
+        content_bytes=source.encode("utf8"),
+        lines=[],  # 空 lines: 讓所有以行為準的快路徑失效,強制走 fallback
+        file_path="sample.kt",
+        symbols={},
+        functions=[],
+        classes=[],
+        imports=[],
+        symbol_lookup={},
+        pending_calls=[],
+        pending_call_set=set(),
+    )
+
+
+def test_function_name_header_fallback_survives_unicode() -> None:
+    strategy = KotlinParsingStrategy()
+    context = _make_context(UNICODE_KT)
+    start = context.content_bytes.index(b"fun topLevel")
+    end = context.content_bytes.index(b"= x + 1") + len(b"= x + 1")
+    node = _FakeNameNodeMissing(start, end)
+    assert strategy._get_kotlin_function_name(node, context) == "topLevel"
+
+
+def test_function_signature_fallback_survives_unicode() -> None:
+    strategy = KotlinParsingStrategy()
+    context = _make_context(UNICODE_KT)
+    parser = tree_sitter.Parser(strategy.kotlin_language)
+    tree = parser.parse(context.content_bytes)
+
+    def find_function(node):
+        if node.type == "function_declaration":
+            return node
+        for child in node.children:
+            found = find_function(child)
+            if found is not None:
+                return found
+        return None
+
+    fn_node = find_function(tree.root_node)
+    assert fn_node is not None
+    signature = strategy._get_kotlin_function_signature(fn_node, context)
+    assert signature == 'fun greet(): String = "hi"'
 ```
 
-(kotlin 走 `context.lines` 快路徑,此測試可能修改前就綠——那是預期的;它的角色是守住 Task 5 改動不引入回歸。真正的 bug 出口在 AST 異常 fallback,無法穩定用單元測試觸發,以 Step 3 的逐行改寫 + grep 驗證涵蓋。)
+(前四個雙胞胎測試可能修改前就綠——kotlin 主路徑多半已走 bytes;它們守回歸。後兩個 fallback 測試修改前**必須紅**:`_get_kotlin_function_name` 的 header fallback(L218)與 `_get_kotlin_function_signature` 的 snippet fallback(L227)都還在用 str 切片,unicode 註解造成的 +13 bytes 偏移會讓斷言失敗。若 `test_function_signature_fallback_survives_unicode` 因 grammar 差異找不到 `function_declaration` 節點,改用實際的節點型別名(以 `tree.root_node` 印出的 sexp 為準),不可刪測試。)
 
-- [ ] **Step 2: 跑測試記錄現狀**
+- [ ] **Step 2: 確認 fallback 測試失敗**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_kotlin_non_ascii.py -v
+venv/bin/pytest tests/strategies/test_kotlin_non_ascii.py -v
 ```
 
-記下結果(綠或紅皆可)。
+預期:`test_function_name_header_fallback_survives_unicode` 與 `test_function_signature_fallback_survives_unicode` FAIL(名稱/簽名被 +13 bytes 偏移弄壞);前四個雙胞胎測試綠紅皆可,記下結果。
 
 - [ ] **Step 3: 修改四個位置 + 刪本地 helper**
 
@@ -790,7 +860,7 @@ def test_unicode_symbols_present() -> None:
 ```bash
 grep -n "def _slice_bytes" src/code_index_mcp/indexing/strategies/kotlin_strategy.py
 grep -n "context\.content\[" src/code_index_mcp/indexing/strategies/kotlin_strategy.py
-.venv/bin/pytest tests/strategies/test_kotlin_non_ascii.py tests/strategies/test_kotlin_discovery.py tests/ -q
+venv/bin/pytest tests/strategies/test_kotlin_non_ascii.py tests/strategies/test_kotlin_discovery.py tests/ -q
 ```
 
 預期:兩個 grep 都 0 筆;測試全 PASS(尤其既有 `test_kotlin_discovery.py`)。
@@ -868,7 +938,7 @@ def test_unicode_names_and_lines_exact() -> None:
 - [ ] **Step 2: 確認測試失敗**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_zig_non_ascii.py -v
+venv/bin/pytest tests/strategies/test_zig_non_ascii.py -v
 ```
 
 預期:FAIL——unicode 版名稱亂碼(`lePause(` 之類)且 `togglePause` 缺失或行號錯。
@@ -954,7 +1024,7 @@ grep -rn "_safe_extract_text\|_extract_line_number" src/ tests/
 - [ ] **Step 6: 確認測試通過**
 
 ```bash
-.venv/bin/pytest tests/strategies/test_zig_non_ascii.py tests/ -q
+venv/bin/pytest tests/strategies/test_zig_non_ascii.py tests/ -q
 ```
 
 預期:全 PASS。
@@ -993,10 +1063,10 @@ grep -rn "_safe_extract_text\|_extract_line_number" src/ tests/
 - [ ] **Step 3: 成功標準 1、2——全套測試**
 
 ```bash
-.venv/bin/pytest tests/ -v 2>&1 | tail -30
+venv/bin/pytest tests/ -q
 ```
 
-預期:全 PASS,含 5 個新測試檔(base、ts、js、java、kotlin、zig)與全部既有測試;對照 Task 1 Step 2 基線無新增失敗。
+預期:exit code 0、全 PASS,含 6 個新測試檔(base、ts、js、java、kotlin、zig)與全部既有測試;對照 Task 1 Step 2 基線無新增失敗。(不要把 pytest 接進管線——沒有 pipefail 時 exit code 會被管線尾端指令蓋掉。)
 
 - [ ] **Step 4: 檢視 diff 總覽並確認範圍**
 
