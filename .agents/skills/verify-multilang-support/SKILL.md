@@ -69,7 +69,7 @@ As an agent, your goal is to verify that the `code-index-mcp` server can correct
 
 | Language | Relative Path | Verification Query | Expected Symbol | Preferred File |
 | :--- | :--- | :--- | :--- | :--- |
-| **Python** | `python` | `class UserManager` | `cli` | `cli.py` |
+| **Python** | `python` | `class UserManager` | `cli` | `user_management/cli.py` |
 | **Go** | `go/user-management` | `UserService` | `CreateUser` | `internal/services/user_service.go` |
 | **Java** | `java/user-management` | `class UserManager` | `UserManager.createUser` | `src/main/java/com/example/usermanagement/services/UserManager.java` |
 | **JavaScript** | `javascript/user-management` | `class UserService` | `UserService.createUser` | `src/services/UserService.js` |
@@ -82,7 +82,7 @@ As an agent, your goal is to verify that the `code-index-mcp` server can correct
 
 ## Expected Baselines
 
-### Python — `cli.py`
+### Python — `user_management/cli.py`
 ```yaml
 language: python
 symbol_count_min: 11
@@ -101,8 +101,8 @@ expected_functions:
 expected_methods: []
 expected_classes: []
 expected_called_by:
-  cli: ["cli.py::main"]
-  create_user: ["cli.py::create_user"]
+  cli: ["user_management/cli.py::main"]
+  create_user: ["user_management/cli.py::create_user"]
 expected_imports:
   - click
   - json
@@ -331,6 +331,6 @@ expected_imports: []
 ## Tips
 - Confirm the sample project's real relative path before assuming the table is current.
 - Objective-C does not have a subdirectory — its files sit directly under `test/sample-projects/objective-c/`.
-- Python's sample project also has files at the top level (`cli.py`, `__init__.py`).
+- Python's CLI and package initializer live under `user_management/`.
 - If a baseline check fails, read the actual file to determine whether the baseline is stale (sample project changed) or the indexer has a bug. Update the baseline if the sample project legitimately changed.
 - When new languages are added, add a baseline section here based on the actual `get_file_summary` output.
