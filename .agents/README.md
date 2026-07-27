@@ -1,10 +1,13 @@
-# Agent Skills
+# Project Skills
 
-This repository maintains shared skill sources in `.agent/skills`.
+This repository exposes project-scoped skills from `.agents/skills`.
 
-Agent-specific skill directories such as `.codex/skills` or `.claude/skills` are
-not repo-managed. If you want to use these skills in a local agent environment,
-link them from `.agent/skills` into the skill directory used by your tool.
+| Skill | Use when |
+|---|---|
+| `release-prep` | A completed change is ready for versioning or release work. |
+| `verify-multilang-support` | Language strategies, parsers, indexing, or sample-project baselines need verification. |
 
-The exact linking/setup method is environment-specific and intentionally left to
-each developer.
+Agents that support the `.agents/skills/<name>/SKILL.md` convention discover these
+skills at session startup. Restart or open a new session after adding, renaming, or
+changing a skill's frontmatter. Invoke a skill by name when deterministic selection
+is important.
