@@ -83,6 +83,24 @@ class ParsingStrategy(ABC):
         """Get just the filename from a full path."""
         return os.path.basename(file_path)
 
+    def _slice_bytes(self, content_bytes: bytes, start: int, end: int) -> str:
+        """Slice the UTF-8 bytes fed to tree-sitter using its byte offsets.
+
+        tree-sitter reports node positions as byte offsets into the encoded
+        source. Always slice the same bytes object that was passed to
+        parser.parse() — never a str (issue #88).
+        """
+        start = max(0, min(start, len(content_bytes)))
+        end = max(0, min(end, len(content_bytes)))
+        if start >= end:
+            return ""
+        return content_bytes[start:end].decode("utf8", errors="ignore")
+
+    def _line_at_byte(self, content_bytes: bytes, offset: int) -> int:
+        """Return the 1-based line number containing the given byte offset."""
+        offset = max(0, min(offset, len(content_bytes)))
+        return content_bytes[:offset].count(b"\n") + 1
+
     def _safe_extract_text(self, content: str, start: int, end: int) -> str:
         """Safely extract text from content, handling bounds."""
         try:
