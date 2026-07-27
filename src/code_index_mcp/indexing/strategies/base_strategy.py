@@ -66,19 +66,6 @@ class ParsingStrategy(ABC):
 
         return normalized or os.path.basename(file_path)
 
-    def _extract_line_number(self, content: str, symbol_position: int) -> int:
-        """
-        Extract line number from character position in content.
-
-        Args:
-            content: File content
-            symbol_position: Character position in content
-
-        Returns:
-            Line number (1-based)
-        """
-        return content[:symbol_position].count('\n') + 1
-
     def _get_file_name(self, file_path: str) -> str:
         """Get just the filename from a full path."""
         return os.path.basename(file_path)
@@ -100,10 +87,3 @@ class ParsingStrategy(ABC):
         """Return the 1-based line number containing the given byte offset."""
         offset = max(0, min(offset, len(content_bytes)))
         return content_bytes[:offset].count(b"\n") + 1
-
-    def _safe_extract_text(self, content: str, start: int, end: int) -> str:
-        """Safely extract text from content, handling bounds."""
-        try:
-            return content[start:end].strip()
-        except (IndexError, TypeError):
-            return ""
