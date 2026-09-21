@@ -1,0 +1,7 @@
+{
+  "type": "plugin",
+  "runner": "node",
+  "owner": "hoonowng",
+  "name": "codeindex-mcp",
+  "revision": 1
+}

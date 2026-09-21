@@ -1,0 +1,28 @@
+# Python dependencies for the upstream Code Index MCP backend (CodeIndex/).
+# Installed by scripts/setup.cjs (postinstall, step [c}) via `pip install -r`
+# after the venv is created. Kept as a plain text file (not a bundled ./wheels/
+# directory) so the plugin stays small enough for LM Studio Hub upload.
+#
+# Union of the upstream's own dependency sources:
+#   CodeIndex/pyproject.toml      -> mcp, watchdog, tree-sitter*, pathspec, msgpack
+#   CodeIndex/requirements.txt    -> + protobuf, libclang
+#   CodeIndex/fastmcp.json        -> subset of the above
+#
+# NOTE: unlike the old ./wheels/ bundle, installing from PyPI needs network at
+# install time, and `libclang`/`protobuf`/`tree-sitter*` need a prebuilt wheel
+# for the host's platform+Python (or a C compiler to build from source).
+
+mcp>=1.21.0,<2.0.0
+watchdog>=3.0.0
+protobuf>=4.21.0
+tree-sitter>=0.20.0
+tree-sitter-javascript>=0.20.0
+tree-sitter-typescript>=0.20.0
+tree-sitter-java>=0.20.0
+tree-sitter-kotlin>=0.3.0
+tree-sitter-c-sharp>=0.20.0
+tree-sitter-zig>=0.20.0
+tree-sitter-rust>=0.20.0
+pathspec>=0.12.1
+libclang>=16.0.0
+msgpack>=1.0.0

@@ -1,0 +1,24 @@
+{
+  "name": "codeindex-mcp",
+  "version": "0.1.0",
+  "description": "LM Studio plugin that wraps the upstream Code Index MCP (Python) as a set of tools.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "dev": "lms dev",
+    "postinstall": "node scripts/setup.cjs"
+  },
+  "license": "MIT",
+  "author": "hoonowng",
+  "dependencies": {
+    "@lmstudio/sdk": "^1.5.0",
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.1",
+    "typescript": "^5.7.2"
+  }
+}
